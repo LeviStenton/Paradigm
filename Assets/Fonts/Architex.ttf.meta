@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: 06619ded3c8d4c649b53289f511f68df
+timeCreated: 1498972398
+licenseType: Free
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Architext
+  fontNames:
+  - Architext
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
