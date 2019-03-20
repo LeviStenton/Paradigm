@@ -11,7 +11,7 @@ public class OrbitSounds : MonoBehaviour
 
     public AudioClip[] clips;
     private int clipIndex;
-    private AudioSource audio;
+    private AudioSource audioClips;
     private bool audioPlaying = false;
 
     // Use this for initialization
@@ -23,17 +23,17 @@ public class OrbitSounds : MonoBehaviour
             relativeDistance = transform.position - target.position;
         }
 
-        audio = gameObject.GetComponent<AudioSource>();
+        audioClips = gameObject.GetComponent<AudioSource>();
     }
 
     void Update()
     {
-        if (!audio.isPlaying)
+        if (!audioClips.isPlaying)
         {
             clipIndex = Random.Range(0, clips.Length - 1);
-            audio.clip = clips[clipIndex];
-            audio.PlayDelayed(Random.Range(20f, 50f));
-            Debug.Log("Nothing playing, we set new audio to " + audio.clip.name);
+            audioClips.clip = clips[clipIndex];
+            audioClips.PlayDelayed(Random.Range(20f, 50f));
+            Debug.Log("Nothing playing, we set new audio to " + audioClips.clip.name);
         }
     }
 

@@ -4,18 +4,29 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
 
+    [Header("Movement")]
     public float maxMoveSpeed;
     float moveSpeedX;
     float moveSpeedZ;
     Vector3 velocity;
-    float gravity = -20;   
+    float gravity = -20;
 
+    [Header("Camera")]
     public GameObject myCam;
     public float mouseSensX;
     public float mouseSensY;
+    float mouseSpeedX;
+    float mouseSpeedY;
     private Vector3 rotateValueX;
     private Vector3 rotateValueY;
-
+    public float viewRangeUp;
+    public float viewRangeDown;
+    public int yInvert = -1;
+    private float rotY;
+    private float rotX;
+    Quaternion localCamRotation;
+    Quaternion localPlayRotation;
+    public GameObject playerScreenStatic;
     public float shootingDistance;
 
     // Use this for initialization
@@ -29,7 +40,6 @@ public class PlayerController : MonoBehaviour {
         Movement();
         CameraRotation();
         Shooting();
-
     }
 
     public void Movement()
@@ -45,12 +55,18 @@ public class PlayerController : MonoBehaviour {
 
     public void CameraRotation()
     {
-        float mouseSpeedX = Input.GetAxis("Mouse Y") * mouseSensY;
-        float mouseSpeedY = Input.GetAxis("Mouse X") * mouseSensX;
-        rotateValueX = new Vector3(mouseSpeedX * -1, 0, 0);
-        myCam.transform.eulerAngles = myCam.transform.eulerAngles + rotateValueX;
-        rotateValueY = new Vector3(0, mouseSpeedY * +1, 0);
-        transform.eulerAngles = transform.eulerAngles + rotateValueY;
+        float mouseX = Input.GetAxis("Mouse X");
+        float mouseY = Input.GetAxis("Mouse Y");
+
+        rotY += mouseX * mouseSensX;
+        rotX += (mouseY * yInvert) * mouseSensY;
+
+        rotX = Mathf.Clamp(rotX, viewRangeDown, viewRangeUp);
+
+        localCamRotation = Quaternion.Euler(rotX, myCam.transform.rotation.y, myCam.transform.rotation.z);
+        localPlayRotation = Quaternion.Euler(transform.rotation.x, rotY, transform.rotation.z);
+        myCam.transform.localRotation = localCamRotation;
+        transform.localRotation = localPlayRotation;
     }
 
     public void Shooting()
@@ -67,11 +83,13 @@ public class PlayerController : MonoBehaviour {
         float y = Screen.height / 2;
 
         Ray ray = gameObject.GetComponentInChildren<Camera>().ScreenPointToRay(new Vector2(x, y));
-        Debug.DrawRay(ray.origin, ray.direction * 1000, Color.green);
+        Debug.DrawRay(ray.origin, ray.direction * shootingDistance, Color.green);
 
         RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, shootingDistance))
+        if (Physics.Raycast(ray, out hit, shootingDistance) && hit.collider.gameObject.GetComponent<TriggerEvent>())
         {
+            TriggerEvent trigEv = hit.collider.gameObject.GetComponent<TriggerEvent>();
+            trigEv.TriggeredEvent();
             Debug.Log("Hit");
         }
     }
