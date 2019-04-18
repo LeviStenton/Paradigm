@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour {
 
@@ -29,10 +30,16 @@ public class PlayerController : MonoBehaviour {
     public GameObject playerScreenStatic;
     public float shootingDistance;
 
+    [Header("UI")]
+    public Image fadeToBlack;
+
+    [Header("Stats")]
+    public int stageCount = 1;
+
     // Use this for initialization
     void Start()
     {        
-        Cursor.visible = false;
+        Cursor.visible = false;        
     }
 
     private void FixedUpdate()
@@ -89,8 +96,14 @@ public class PlayerController : MonoBehaviour {
         if (Physics.Raycast(ray, out hit, shootingDistance) && hit.collider.gameObject.GetComponent<TriggerEvent>())
         {
             TriggerEvent trigEv = hit.collider.gameObject.GetComponent<TriggerEvent>();
+            PlayAudio();
             trigEv.TriggeredEvent();
             Debug.Log("Hit");
         }
+    }
+
+    public void PlayAudio()
+    {
+        this.gameObject.GetComponent<AudioSource>().Play();
     }
 }

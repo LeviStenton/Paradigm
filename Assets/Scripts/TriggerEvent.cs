@@ -4,24 +4,49 @@ using UnityEngine;
 
 public class TriggerEvent : MonoBehaviour {
 
+    [Header("Arrays")]
     public GameObject[] screens;
     public GameObject[] screenLight;
     public GameObject[] storyTexts;
     int currentIndex = 0;
+    public GameObject[] worldColliders;
+
+    [Header("Strings")]
+    public string sceneToUnload;
+    public string sceneToLoad;
     
     PlayerController playerController;
+    SceneController sceneCont;
 
     BoxCollider col;
 
+    [Header("Timers")]
     public float staticEffectTime;
+    public float timeUntilNextScene;
+
+    [Header("Vectors")]
+    public Vector3 offSet;
 
     //GRAB BOX COLLIDER ON SCREEN TO DEACTIVATE DURING TRANSITION SO INDEX++ DOESN"T INCREASE DURING TRANSITIONS
     public void Start()
     {
         col = this.gameObject.GetComponent<BoxCollider>();
         playerController = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
+        sceneCont = GameObject.FindGameObjectWithTag("SceneController").GetComponent<SceneController>();
     }
 
+    void FixedUpdate()
+    {
+        stage6PlayerFollow();
+    }
+
+    void stage6PlayerFollow()
+    {
+        if (playerController.stageCount >= 6f)
+        {
+            GameObject.FindGameObjectWithTag("Final Stage").transform.position = new Vector3(0, 0, playerController.transform.position.z + offSet.z);
+}
+    }
 
     //THE FUNCTION TO BE CALLED BY THE PLAYER'S RAYCAST
     public void TriggeredEvent()
@@ -66,13 +91,28 @@ public class TriggerEvent : MonoBehaviour {
         screenLight[0].SetActive(false);
         playerController.playerScreenStatic.SetActive(true);
         yield return new WaitForSeconds(time);
-        ResetPlayerPos();
-        //SceneManager.LoadScene(nextScene);
-        playerController.playerScreenStatic.SetActive(false);        
+        ResetPlayerPos();        
+        playerController.playerScreenStatic.SetActive(false);
+        playerController.stageCount += 1;
+        Debug.Log(playerController.stageCount);
+        StartCoroutine(SpawnNextStage(timeUntilNextScene));
     }
 
     private void ResetPlayerPos()
     {
         GameObject.FindGameObjectWithTag("Player").transform.position = new Vector3(0, 0, 0);
+    }
+
+    IEnumerator SpawnNextStage(float time)
+    {
+        yield return new WaitForSeconds(time);
+        sceneCont.NextStage(sceneToUnload, sceneToLoad);
+    }
+
+    public void EndGame()
+    {
+        Color tempColor = playerController.fadeToBlack.color;
+        tempColor.a += 0.1f;
+        playerController.fadeToBlack.color = tempColor;
     }
 }
