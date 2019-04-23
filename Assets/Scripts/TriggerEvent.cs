@@ -4,12 +4,13 @@ using UnityEngine;
 
 public class TriggerEvent : MonoBehaviour {
 
+    PlayerSSUIController playerSSUI;
+
     [Header("Arrays")]
     public GameObject[] screens;
     public GameObject[] screenLight;
     public GameObject[] storyTexts;
     int currentIndex = 0;
-    public GameObject[] worldColliders;
 
     [Header("Strings")]
     public string sceneToUnload;
@@ -25,7 +26,7 @@ public class TriggerEvent : MonoBehaviour {
     public float timeUntilNextScene;
 
     [Header("Vectors")]
-    public Vector3 offSet;
+    public Vector3 endGameStageOffSet;
 
     //GRAB BOX COLLIDER ON SCREEN TO DEACTIVATE DURING TRANSITION SO INDEX++ DOESN"T INCREASE DURING TRANSITIONS
     public void Start()
@@ -33,18 +34,22 @@ public class TriggerEvent : MonoBehaviour {
         col = this.gameObject.GetComponent<BoxCollider>();
         playerController = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
         sceneCont = GameObject.FindGameObjectWithTag("SceneController").GetComponent<SceneController>();
+        playerSSUI = GameObject.FindGameObjectWithTag("SSUI").GetComponent<PlayerSSUIController>();
     }
 
     void FixedUpdate()
     {
-        stage6PlayerFollow();
+        if (playerSSUI.isPaused)
+        {
+            stage6PlayerFollow();
+        }
     }
 
     void stage6PlayerFollow()
     {
         if (playerController.stageCount >= 6f)
         {
-            GameObject.FindGameObjectWithTag("Final Stage").transform.position = new Vector3(0, 0, playerController.transform.position.z + offSet.z);
+            GameObject.FindGameObjectWithTag("Final Stage").transform.position = new Vector3(0, 0, playerController.transform.position.z + endGameStageOffSet.z);
 }
     }
 
@@ -58,13 +63,12 @@ public class TriggerEvent : MonoBehaviour {
             StartCoroutine(StaticEffect(staticEffectTime));
             currentIndex++;
             storyTexts[currentIndex].SetActive(true);
-            Debug.Log(currentIndex);
         }
 
         else if(currentIndex >= (storyTexts.Length - 1))
         {
             currentIndex = storyTexts.Length;
-            StartCoroutine(StaticEffectEnd(staticEffectTime));
+            StartCoroutine(StaticEffectEnd(staticEffectTime, this.transform, sceneToUnload, sceneToLoad));
         }
     }
 
@@ -85,28 +89,57 @@ public class TriggerEvent : MonoBehaviour {
     }
 
     //END SCENE - TRANSITION TO NEW SCENE
-    IEnumerator StaticEffectEnd(float time)
-    {        
+    IEnumerator StaticEffectEnd(float time, Transform stup, string stu, string stl)
+    {
+        col.enabled = false;
         screens[0].SetActive(false);
         screenLight[0].SetActive(false);
         playerController.playerScreenStatic.SetActive(true);
         yield return new WaitForSeconds(time);
         ResetPlayerPos();        
-        playerController.playerScreenStatic.SetActive(false);
-        playerController.stageCount += 1;
+        playerController.playerScreenStatic.SetActive(false);        
         Debug.Log(playerController.stageCount);
-        StartCoroutine(SpawnNextStage(timeUntilNextScene));
+        if(playerController.stageCount == 5)
+        {
+            StartCoroutine(Stage5Camera(timeUntilNextScene / 2));
+        }
+        StartCoroutine(sceneCont.SpawnNextStage(timeUntilNextScene, stup, stu, stl));        
+        col.enabled = true;
+    }
+
+    IEnumerator Stage5Camera(float time)
+    {
+        //GameObject stage5Text = GameObject.FindGameObjectWithTag("Stage5Text");        
+        //storyTexts[currentIndex].SetActive(false);
+        //stage5Text.SetActive(true);
+        AudioSource audioSource = GetComponent<AudioSource>();
+        Camera mainCam = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
+        Camera stage5Cam = GameObject.FindGameObjectWithTag("Stage5Camera").GetComponent<Camera>();
+        //GameObject person = GameObject.FindGameObjectWithTag("Person");
+        //person.SetActive(true);
+        mainCam.enabled = false;
+        stage5Cam.enabled = true;
+        screenLight[0].SetActive(true);
+        audioSource.Play();
+        yield return new WaitForSeconds(time);
+        StartCoroutine(StaticEffectScreen(staticEffectTime));
+        audioSource.Stop();
+        screenLight[0].SetActive(false);
+        stage5Cam.enabled = false;
+        mainCam.enabled = true;
+        //person.SetActive(false);
+    }
+
+    IEnumerator StaticEffectScreen(float time)
+    {
+        playerController.playerScreenStatic.SetActive(true);
+        yield return new WaitForSeconds(time);
+        playerController.playerScreenStatic.SetActive(false);
     }
 
     private void ResetPlayerPos()
     {
         GameObject.FindGameObjectWithTag("Player").transform.position = new Vector3(0, 0, 0);
-    }
-
-    IEnumerator SpawnNextStage(float time)
-    {
-        yield return new WaitForSeconds(time);
-        sceneCont.NextStage(sceneToUnload, sceneToLoad);
     }
 
     public void EndGame()

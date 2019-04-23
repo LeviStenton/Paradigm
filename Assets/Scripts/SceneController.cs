@@ -5,24 +5,19 @@ using UnityEngine.SceneManagement;
 
 public class SceneController : MonoBehaviour {
 
+    PlayerController playerController;
+
 	// Use this for initialization
 	void Start ()
     {
+        playerController = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
         StartGame();
 	}
-	
-	// Update is called once per frame
-	void Update ()
-    {
-        RestartGame();
-    }
 
-    void RestartGame()
+    public void RestartGame()
     {
-        if (Input.GetButtonDown("Escape"))
-        {
-            SceneManager.LoadScene("Game");
-        }
+        PlayerPrefs.Save();
+        SceneManager.LoadScene("Game");
     }
 
     public void StartGame()
@@ -32,12 +27,16 @@ public class SceneController : MonoBehaviour {
 
     public void EndGame()
     {
+        PlayerPrefs.Save();
         Application.Quit();
     }
 
-    public void NextStage(string sceneToUnload, string sceneToLoad)
+    public IEnumerator SpawnNextStage(float time, Transform sceneToUnloadPos, string sceneToUnload, string sceneToLoad)
     {
+        sceneToUnloadPos.position = new Vector3(0, -10, 0);
+        yield return new WaitForSeconds(time);
         SceneManager.UnloadSceneAsync(sceneToUnload);
         SceneManager.LoadScene(sceneToLoad, LoadSceneMode.Additive);
+        playerController.stageCount += 1;
     }
 }

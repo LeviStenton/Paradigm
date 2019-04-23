@@ -5,17 +5,22 @@ using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour {
 
+    PlayerSSUIController playerSSUI;
+
     [Header("Movement")]
     public float maxMoveSpeed;
     float moveSpeedX;
     float moveSpeedZ;
     Vector3 velocity;
-    float gravity = -20;
 
     [Header("Camera")]
     public GameObject myCam;
     public float mouseSensX;
+    public float mouseSenseXMax;
+    public float mouseSenseXStart;
     public float mouseSensY;
+    public float mouseSenseYMax;
+    public float mouseSenseYStart;
     float mouseSpeedX;
     float mouseSpeedY;
     private Vector3 rotateValueX;
@@ -38,8 +43,10 @@ public class PlayerController : MonoBehaviour {
 
     // Use this for initialization
     void Start()
-    {        
-        Cursor.visible = false;        
+    {
+        playerSSUI = GameObject.FindGameObjectWithTag("SSUI").GetComponent<PlayerSSUIController>();
+        Cursor.visible = false;
+        playerSSUI.isPaused = true;
     }
 
     private void FixedUpdate()
@@ -51,59 +58,74 @@ public class PlayerController : MonoBehaviour {
 
     public void Movement()
     {
-        float moveX = Input.GetAxis("Horizontal");
-        float moveZ = Input.GetAxis("Vertical");
-        if (Input.GetAxis("Horizontal") > 0 || Input.GetAxis("Horizontal") < 0 || Input.GetAxis("Vertical") > 0 || Input.GetAxis("Vertical") < 0)
+        if (playerSSUI.isPaused)
         {
-            gameObject.GetComponent<Rigidbody>().velocity = transform.forward * moveZ * maxMoveSpeed;
-            gameObject.GetComponent<Rigidbody>().velocity += transform.right * moveX * maxMoveSpeed;
+            float moveX = Input.GetAxis("Horizontal");
+            float moveZ = Input.GetAxis("Vertical");
+            if (Input.GetAxis("Horizontal") > 0 || Input.GetAxis("Horizontal") < 0 || Input.GetAxis("Vertical") > 0 || Input.GetAxis("Vertical") < 0)
+            {
+                gameObject.GetComponent<Rigidbody>().velocity = transform.forward * moveZ * maxMoveSpeed;
+                gameObject.GetComponent<Rigidbody>().velocity += transform.right * moveX * maxMoveSpeed;
+            }
         }
     }
 
     public void CameraRotation()
     {
-        float mouseX = Input.GetAxis("Mouse X");
-        float mouseY = Input.GetAxis("Mouse Y");
+        if (playerSSUI.isPaused)
+        {
+            float mouseX = Input.GetAxis("Mouse X");
+            float mouseY = Input.GetAxis("Mouse Y");
 
-        rotY += mouseX * mouseSensX;
-        rotX += (mouseY * yInvert) * mouseSensY;
+            rotY += mouseX * mouseSensX;
+            rotX += (mouseY * (playerSSUI.invertYToggle.isOn ? -yInvert : yInvert)) * mouseSensY;
 
-        rotX = Mathf.Clamp(rotX, viewRangeDown, viewRangeUp);
+            rotX = Mathf.Clamp(rotX, viewRangeDown, viewRangeUp);
 
-        localCamRotation = Quaternion.Euler(rotX, myCam.transform.rotation.y, myCam.transform.rotation.z);
-        localPlayRotation = Quaternion.Euler(transform.rotation.x, rotY, transform.rotation.z);
-        myCam.transform.localRotation = localCamRotation;
-        transform.localRotation = localPlayRotation;
+            localCamRotation = Quaternion.Euler(rotX, myCam.transform.rotation.y, myCam.transform.rotation.z);
+            localPlayRotation = Quaternion.Euler(transform.rotation.x, rotY, transform.rotation.z);
+            myCam.transform.localRotation = localCamRotation;
+            transform.localRotation = localPlayRotation;
+        }
     }
 
     public void Shooting()
     {
-        if (Input.GetButtonDown("Fire1"))
+        if (playerSSUI.isPaused)
         {
-            RaycastShooting();
+            if (Input.GetButtonDown("Fire1"))
+            {
+                RaycastShooting();
+            }
         }
     }
 
     public void RaycastShooting()
     {
-        float x = Screen.width / 2;
-        float y = Screen.height / 2;
-
-        Ray ray = gameObject.GetComponentInChildren<Camera>().ScreenPointToRay(new Vector2(x, y));
-        Debug.DrawRay(ray.origin, ray.direction * shootingDistance, Color.green);
-
-        RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, shootingDistance) && hit.collider.gameObject.GetComponent<TriggerEvent>())
+        if (playerSSUI.isPaused)
         {
-            TriggerEvent trigEv = hit.collider.gameObject.GetComponent<TriggerEvent>();
-            PlayAudio();
-            trigEv.TriggeredEvent();
-            Debug.Log("Hit");
+            float x = Screen.width / 2;
+            float y = Screen.height / 2;
+
+            Ray ray = gameObject.GetComponentInChildren<Camera>().ScreenPointToRay(new Vector2(x, y));
+            Debug.DrawRay(ray.origin, ray.direction * shootingDistance, Color.green);
+
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit, shootingDistance) && hit.collider.gameObject.GetComponent<TriggerEvent>())
+            {
+                TriggerEvent trigEv = hit.collider.gameObject.GetComponent<TriggerEvent>();
+                PlayAudio();
+                trigEv.TriggeredEvent();
+                Debug.Log("Hit");
+            }
         }
     }
 
     public void PlayAudio()
     {
-        this.gameObject.GetComponent<AudioSource>().Play();
+        if (playerSSUI.isPaused)
+        {
+            this.gameObject.GetComponent<AudioSource>().Play();
+        }
     }
 }
