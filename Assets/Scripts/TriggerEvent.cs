@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class TriggerEvent : MonoBehaviour {
 
@@ -97,8 +98,7 @@ public class TriggerEvent : MonoBehaviour {
         playerController.playerScreenStatic.SetActive(true);
         yield return new WaitForSeconds(time);
         ResetPlayerPos();        
-        playerController.playerScreenStatic.SetActive(false);        
-        Debug.Log(playerController.stageCount);
+        playerController.playerScreenStatic.SetActive(false);   
         if(playerController.stageCount == 5)
         {
             StartCoroutine(Stage5Camera(timeUntilNextScene / 2));
@@ -109,16 +109,19 @@ public class TriggerEvent : MonoBehaviour {
 
     IEnumerator Stage5Camera(float time)
     {
-        //GameObject stage5Text = GameObject.FindGameObjectWithTag("Stage5Text");        
-        //storyTexts[currentIndex].SetActive(false);
-        //stage5Text.SetActive(true);
+        Text stage5Text = GameObject.FindGameObjectWithTag("Stage5Text").GetComponent<Text>();        
+        currentIndex--;
+        storyTexts[currentIndex].SetActive(false);
+        stage5Text.enabled = true;
         AudioSource audioSource = GetComponent<AudioSource>();
         Camera mainCam = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
+        AudioListener mainCamAL = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<AudioListener>();
+        AudioListener stage5AL = GameObject.FindGameObjectWithTag("Stage5Camera").GetComponent<AudioListener>();
         Camera stage5Cam = GameObject.FindGameObjectWithTag("Stage5Camera").GetComponent<Camera>();
-        //GameObject person = GameObject.FindGameObjectWithTag("Person");
-        //person.SetActive(true);
         mainCam.enabled = false;
         stage5Cam.enabled = true;
+        mainCamAL.enabled = false;
+        stage5AL.enabled = true;
         screenLight[0].SetActive(true);
         audioSource.Play();
         yield return new WaitForSeconds(time);
@@ -126,8 +129,9 @@ public class TriggerEvent : MonoBehaviour {
         audioSource.Stop();
         screenLight[0].SetActive(false);
         stage5Cam.enabled = false;
+        stage5AL.enabled = false;
         mainCam.enabled = true;
-        //person.SetActive(false);
+        mainCamAL.enabled = true;
     }
 
     IEnumerator StaticEffectScreen(float time)
@@ -140,12 +144,5 @@ public class TriggerEvent : MonoBehaviour {
     private void ResetPlayerPos()
     {
         GameObject.FindGameObjectWithTag("Player").transform.position = new Vector3(0, 0, 0);
-    }
-
-    public void EndGame()
-    {
-        Color tempColor = playerController.fadeToBlack.color;
-        tempColor.a += 0.1f;
-        playerController.fadeToBlack.color = tempColor;
     }
 }

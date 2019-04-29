@@ -33,7 +33,6 @@ public class OrbitSounds : MonoBehaviour
             clipIndex = Random.Range(0, clips.Length - 1);
             audioClips.clip = clips[clipIndex];
             audioClips.PlayDelayed(Random.Range(20f, 50f));
-            Debug.Log("Nothing playing, we set new audio to " + audioClips.clip.name);
         }
     }
 

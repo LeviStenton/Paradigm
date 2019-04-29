@@ -14,8 +14,6 @@ public class PlayerSSUIController : MonoBehaviour {
     
     public Slider camSensX;
     public Slider camSensY;
-    public Text sensXText;
-    public Text sensYText;
     public Toggle invertYToggle;
 
     public bool isPaused;
@@ -45,22 +43,24 @@ public class PlayerSSUIController : MonoBehaviour {
         camSensY.minValue = playerController.mouseSenseYStart;
         camSensX.value = PlayerPrefs.GetFloat(X_SENSITIVITY);
         camSensY.value = PlayerPrefs.GetFloat(Y_SENSITIVITY);
-        invertYToggle.isOn = GetBoolPref(INVERT_CAMERA);
+        invertYToggle.isOn = GetBoolPref(INVERT_CAMERA, false);
     }
 	
 	// Update is called once per frame
 	void Update ()
     {
-        if (Input.GetKeyDown("o"))
-        {
-            PlayerPrefs.DeleteAll();
-            Debug.Log("Deleting Saved Data");
-        }
-
-        if (Input.GetButtonDown("OptionsMenu"))
+        if (Input.GetButtonDown("OptionsMenu") || Input.GetButtonDown("Start Button") && playerController  != null)
         {
             toggleOptions = !toggleOptions;
             isPaused = !isPaused;
+            playerController.GetComponent<AudioSource>().Play();
+        }
+
+        if (Input.GetButtonDown("Back") && optionsMenu.activeInHierarchy)
+        {
+            toggleOptions = !toggleOptions;
+            isPaused = !isPaused;
+            playerController.GetComponent<AudioSource>().Play();
         }
 
         optionsMenu.SetActive(toggleOptions ? true : false);
@@ -79,12 +79,8 @@ public class PlayerSSUIController : MonoBehaviour {
 
     public void OptionsMenu()
     {
-        //sensXText.text = "" + (int)camSensX.value;
-        //sensYText.text = "" + (int)camSensY.value;
-        
         playerController.mouseSensX = camSensX.value;
-        playerController.mouseSensY = camSensY.value;
-        
+        playerController.mouseSensY = camSensY.value;        
     }
 
     public void QuitToDesktop()

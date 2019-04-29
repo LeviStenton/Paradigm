@@ -35,9 +35,6 @@ public class PlayerController : MonoBehaviour {
     public GameObject playerScreenStatic;
     public float shootingDistance;
 
-    [Header("UI")]
-    public Image fadeToBlack;
-
     [Header("Stats")]
     public int stageCount = 1;
 
@@ -45,7 +42,6 @@ public class PlayerController : MonoBehaviour {
     void Start()
     {
         playerSSUI = GameObject.FindGameObjectWithTag("SSUI").GetComponent<PlayerSSUIController>();
-        Cursor.visible = false;
         playerSSUI.isPaused = true;
     }
 
@@ -76,9 +72,11 @@ public class PlayerController : MonoBehaviour {
         {
             float mouseX = Input.GetAxis("Mouse X");
             float mouseY = Input.GetAxis("Mouse Y");
+            float mouseContX = Input.GetAxis("JoystickRightX");
+            float mouseContY = Input.GetAxis("JoystickRightY");
 
-            rotY += mouseX * mouseSensX;
-            rotX += (mouseY * (playerSSUI.invertYToggle.isOn ? -yInvert : yInvert)) * mouseSensY;
+            rotY += (mouseX + mouseContX) * mouseSensX;
+            rotX += ((mouseY + mouseContY) * (playerSSUI.invertYToggle.isOn ? -yInvert : yInvert)) * mouseSensY;
 
             rotX = Mathf.Clamp(rotX, viewRangeDown, viewRangeUp);
 
@@ -93,7 +91,7 @@ public class PlayerController : MonoBehaviour {
     {
         if (playerSSUI.isPaused)
         {
-            if (Input.GetButtonDown("Fire1"))
+            if (Input.GetButtonDown("Activate"))
             {
                 RaycastShooting();
             }
@@ -116,7 +114,6 @@ public class PlayerController : MonoBehaviour {
                 TriggerEvent trigEv = hit.collider.gameObject.GetComponent<TriggerEvent>();
                 PlayAudio();
                 trigEv.TriggeredEvent();
-                Debug.Log("Hit");
             }
         }
     }

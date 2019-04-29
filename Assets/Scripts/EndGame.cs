@@ -4,13 +4,13 @@ using UnityEngine;
 
 public class EndGame : MonoBehaviour
 {
-
+    public string sceneToLoad;
     PlayerController playerCont;
     SceneController sceneCont;
 
     // Start is called before the first frame update
     void Start()
-    {
+    {        
         playerCont = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
         sceneCont = GameObject.FindGameObjectWithTag("SceneController").GetComponent<SceneController>();
     }
@@ -19,7 +19,8 @@ public class EndGame : MonoBehaviour
     {
         if (collision.gameObject.tag == "Player" && playerCont.stageCount >= 6)
         {
-            sceneCont.EndGame();
+            StartCoroutine(sceneCont.FadeToBlackEnd(3, sceneToLoad));
+            Debug.Log("Hit Wall");
         }
     }
 }
